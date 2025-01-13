@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Бенчмарк Визуализации GeoData</title>
+  <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet">
+  <link href="node_modules/ol/ol.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      width: 100%;
+      height: 70vh;
+    }
+    #controls {
+      padding: 10px;
+      background-color: #f0f0f0;
+    }
+    #benchmarkResults {
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .ol-popup {
+      position: absolute;
+      background-color: white;
+      padding: 5px;
+      border: 1px solid black;
+      border-radius: 5px;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="controls">
+    <h2>Выберите библиотеки для бенчмарка:</h2>
+    <label><input type="checkbox" id="openLayersCheckbox" checked> OpenLayers</label>
+    <label><input type="checkbox" id="mapLibreGLCheckbox" checked> MapLibreGL</label>
+    <br><br>
+    <button id="runBenchmark">Запустить Бенчмарк</button>
+    <button id="clearResults">Очистить Результаты</button>
+    <button id="downloadCSV">Скачать CSV</button> <!-- Новая кнопка -->
+    <div id="benchmarkResults"></div>
+  </div>
+
+  <div id="popup" class="ol-popup"></div>
+
+  <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
+  <script type="module" src="displayResults.js"></script> <!-- Добавлен файл displayResults.js -->
+  <script type="module" src="benchmark.js"></script>
+</body>
+</html>
