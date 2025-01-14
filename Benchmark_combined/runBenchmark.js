@@ -1,9 +1,8 @@
-// runBenchmark.js
 import { fromLonLat } from 'ol/proj';
 
 async function loadGeoJsonData() {
   const loadStart = performance.now();
-  // Здесь загружаем и парсим GeoJSON
+
   const response = await fetch('./world_coordinates.geojson');
   const geojsonData = await response.json();
   // При необходимости добавить слой с geojsonData на карту
@@ -15,14 +14,20 @@ export async function runBenchmarkForLibrary(library) {
   // Замеряем только загрузку данных
   const dataLoadTime = await loadGeoJsonData();
 
-  const renderStart = performance.now();
+  let map;
   if (library === 'OpenLayers' && window.openLayersMap) {
-    await performActionsOpenLayers(window.openLayersMap);
+    map = window.openLayersMap;
+    //await performActionsOpenLayers(window.openLayersMap);
   } else if (library === 'MapLibreGL' && window.mapLibreMap) {
-    await performActionsMapLibreGL(window.mapLibreMap);
+    map = window.mapLibreMap;
+    //await performActionsMapLibreGL(window.mapLibreMap);
   } else {
     console.error(`Не удалось найти карту для библиотеки ${library}`);
   }
+
+  const renderStart = performance.now();
+  await performanceActions(map, library);
+  
   const renderEnd = performance.now();
   const renderTime = (renderEnd - renderStart).toFixed(2);
 
@@ -73,7 +78,7 @@ export async function runBenchmarkForLibrary(library) {
     normalizedMemoryUsed * weights.memoryUsed
   ).toFixed(2);
 
-  return {
+  return {  
     dataLoadTime,
     renderTime,
     fps: approximateFps,
@@ -82,7 +87,7 @@ export async function runBenchmarkForLibrary(library) {
   };
 }
 
-function performActionsOpenLayers(map) {
+function performanceActions(map, library) {
   return new Promise((resolve) => {
     const actions = [
       { type: 'zoom', value: 4 },
@@ -101,85 +106,53 @@ function performActionsOpenLayers(map) {
       { type: 'zoom', value: 1 }
     ];
 
-    sequentiallyExecuteActionsOL(map, actions, resolve);
+    sequentiallyExecuteActions(map, actions, resolve, library);
   });
 }
 
-function performActionsMapLibreGL(map) {
-  return new Promise((resolve) => {
-    const actions = [
-      { type: 'zoom', value: 4 },
-      { type: 'zoom', value: 2 },
-      { type: 'pan', value: [37.6173, 55.7558] }, // Москва
-      { type: 'pan', value: [0, 0] },
-      { type: 'zoom', value: 3 },
-      { type: 'zoom', value: 1 },
-      { type: 'pan', value: [-74.006, 40.7128] }, // Нью-Йорк
-      { type: 'pan', value: [139.6917, 35.6895] }, // Токио
-      { type: 'zoom', value: 5 },
-      { type: 'zoom', value: 2 },
-      { type: 'pan', value: [2.3522, 48.8566] }, // Париж
-      { type: 'pan', value: [151.2093, -33.8688] }, // Сидней
-      { type: 'zoom', value: 6 },
-      { type: 'zoom', value: 1 }
-    ];
-
-    sequentiallyExecuteActionsGL(map, actions, resolve);
-  });
-}
-
-function sequentiallyExecuteActionsOL(map, actions, callback) {
-  let index = 0;
-  function executeNext() {
-    if (index >= actions.length) {
-      callback();
-      return;
+function sequentiallyExecuteActions(map, actions, callback, library) {
+    let index = 0;
+    function executeNext() {
+      if (index >= actions.length) {
+        callback();
+        return;
+      }
+      const action = actions[index];
+      if (library == 'OpenLayers') {
+        if (action.type == 'zoom') {
+          map.getView().animate( {zoom: action.value, duration: 100 }, () => {
+            map.once('rendercomplete', () => {
+              index++;
+              executeNext();
+            });
+          });
+        } else if (action.type == 'pan') {
+          map.getView().animate({center: fromLonLat(action.value), duration: 100}, () => {
+            map.once('rendercomplete', () => {
+              index++;
+              executeNext();
+            });
+          });
+        }
+      } else if (library == 'MapLibreGL') {
+        if (action.type == 'zoom') {
+          map.zoomTo(action.value, {duration : 100});
+          map.once('zoomend', () => {
+            map.once('render', () => {
+              index++;
+              executeNext();
+            });
+          });
+        } else if (action.type == 'pan') {
+          map.easeTo({center: action.value, duration : 100 });
+          map.once('moveend', () => {
+            map.once('render', () => {
+              index++;
+              executeNext();
+            });
+          });
+        }
+      }
     }
-    const action = actions[index];
-    if (action.type === 'zoom') {
-      map.getView().animate({ zoom: action.value, duration: 1000 }, () => { // Изменено с 1000 на 1500
-        map.once('rendercomplete', () => {
-          index++;
-          executeNext();
-        });
-      });
-    } else if (action.type === 'pan') {
-      map.getView().animate({ center: fromLonLat(action.value), duration: 1000 }, () => { // Изменено с 1000 на 1500
-        map.once('rendercomplete', () => {
-          index++;
-          executeNext();
-        });
-      });
-    }
-  }
-  executeNext();
-}
-
-function sequentiallyExecuteActionsGL(map, actions, callback) {
-  let index = 0;
-  function executeNext() {
-    if (index >= actions.length) {
-      callback();
-      return;
-    }
-    const action = actions[index];
-    if (action.type === 'zoom') {
-      map.zoomTo(action.value, { duration: 1000 }); // Изменено с 1000 на 1500
-      map.once('zoomend', () => {
-        map.once('render', () => {
-          index++;
-          executeNext();
-        });
-      });
-    } else if (action.type === 'pan') {
-      map.easeTo({ center: action.value, duration: 1000 }); // Изменено с 1000 на 1500
-      map.once('moveend', () => {
-        map.once('render', () => {
-          index++;
-          executeNext();
-        });
-      });
-    }
-  }
-  executeNext();
+    executeNext();
 }
