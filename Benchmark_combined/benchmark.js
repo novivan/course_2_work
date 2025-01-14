@@ -14,6 +14,17 @@ document.getElementById('runBenchmark').addEventListener('click', async () => {
   const results = [];
 
   const selectedLibraries = [];
+
+  if (openLayersSelected) {
+    selectedLibraries.push({
+      name: 'OpenLayers',
+      init: initializeOpenLayers,
+      cleanup: (map) => {
+        map.setTarget(null);
+        window.openLayersMap = null;
+      }
+    });
+  } 
   if (mapLibreGLSelected) {
     selectedLibraries.push({
       name: 'MapLibreGL',
@@ -24,16 +35,7 @@ document.getElementById('runBenchmark').addEventListener('click', async () => {
       }
     });
   }
-  if (openLayersSelected) {
-    selectedLibraries.push({
-      name: 'OpenLayers',
-      init: initializeOpenLayers,
-      cleanup: (map) => {
-        map.setTarget(null);
-        window.openLayersMap = null;
-      }
-    });
-  }
+  
 
   for (const lib of selectedLibraries) {
     try {
@@ -124,7 +126,7 @@ function displayResults(results) {
           <th>Время рендеринга</th>
           <th>средний FPS</th>
           <th>Используемая память</th>
-          <th>Общая производительность</th> <!-- Добавлен новый столбец -->
+          <th>Средневзвешенное время</th> <!-- Добавлен новый столбец -->
         </tr>
       </thead>
       <tbody>

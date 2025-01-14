@@ -46,7 +46,8 @@ export function initializeOpenLayers(targetId) {
             fill: new Fill({ color: 'blue' }),
             stroke: new Stroke({ color: 'white', width: 1 })
           })
-        })
+        }),
+        renderMode: 'image'
       });
 
       map.addLayer(vectorLayer);
