@@ -56,17 +56,17 @@ export async function runBenchmarkForLibrary(library) {
 
   // Веса
   const weights = {
-    dataLoadTime: 1 / 9.0,
-    renderTime: 3 / 9.0,
-    fps: 3 / 9.0,
-    memoryUsed: 2 / 9.0
+    dataLoadTime: 2 / 15.1,
+    renderTime: 0.1 / 15.1,
+    fps: 10 / 15.1,
+    memoryUsed: 3 / 15.1
   };
 
 
   const overallPerformance = (
-    weights.dataLoadTime / parseFloat(dataLoadTime)+
-    weights.renderTime / parseFloat(renderTime) +
-    weights.fps * parseFloat(approximateFps) -
+    weights.dataLoadTime * parseFloat(dataLoadTime)+
+    weights.renderTime * parseFloat(renderTime) -
+    weights.fps * parseFloat(approximateFps) +
     weights.memoryUsed * parseFloat(memoryUsedMB)
   ).toFixed(2);
 
