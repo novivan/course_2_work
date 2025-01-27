@@ -1,154 +1,121 @@
+import { runBenchmarkForLibrary } from './runBenchmark.js';
 import { initializeOpenLayers } from './mainOL.js';
 import { initializeMapLibreGL } from './mainGL.js';
-import { runBenchmarkForLibrary } from './runBenchmark.js';
 
-let benchmarkResults = []; 
+const params = new URLSearchParams(window.location.search);
+const openLayersSelected = params.get('ol') === 'true';
+const mapLibreGLSelected = params.get('ml') === 'true';
+const points = parseInt(params.get('points'));
 
-document.getElementById('runBenchmark').addEventListener('click', async () => {
-  const runButton = document.getElementById('runBenchmark');
-  runButton.disabled = true; 
 
-  const openLayersSelected = document.getElementById('openLayersCheckbox').checked;
-  const mapLibreGLSelected = document.getElementById('mapLibreGLCheckbox').checked;
+const selectedLibraries = [];
 
-  const results = [];
-
-  const selectedLibraries = [];
-
-  if (openLayersSelected) {
+if (openLayersSelected) {
     selectedLibraries.push({
-      name: 'OpenLayers',
-      init: initializeOpenLayers,
-      cleanup: (map) => {
-        map.setTarget(null);
-        window.openLayersMap = null;
-      }
-    });
-  } 
-  if (mapLibreGLSelected) {
-    selectedLibraries.push({
-      name: 'MapLibreGL',
-      init: initializeMapLibreGL,
-      cleanup: (map) => {
-        map.remove();
-        window.mapLibreMap = null;
-      }
-    });
-  }
-  
-
-  for (const lib of selectedLibraries) {
-    try {
-      if (!window[`${lib.name}Map`]) {
-        const map = await lib.init('map');
-
-        if (lib.name === 'OpenLayers') {
-          window.openLayersMap = map;
-          map.getView().on('change:center', () => {
-            // Можно добавить дополнительную логику, если необходимо
-          });
-        } else if (lib.name === 'MapLibreGL') {
-          window.mapLibreMap = map;
-          map.on('render', () => {
-            // Можно добавить дополнительную логику, если необходимо
-          });
+        name: 'OpenLayers',
+        init: initializeOpenLayers,
+        cleanup: (map) => {
+            map.setTarget(null);
+            window.openLayersMap = null;
         }
-      }
+    });
+}
 
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Ожидание 500 мс
+if (mapLibreGLSelected) {
+    selectedLibraries.push({
+        name: 'MapLibreGL',
+        init: initializeMapLibreGL,
+        cleanup: (map) => {
+            map.remove();
+            window.mapLibreMap = null;
+        }
+    });
+}
 
-      // Измеряем время выполнения бенчмарка
-      const metricResults = await runBenchmarkForLibrary(lib.name);
+let benchmarkResults = [];
 
-      results.push({
-        library: lib.name,
-        loadTime: `${metricResults.dataLoadTime} ms`,
-        renderTime: `${metricResults.renderTime} ms`,
-        fps: metricResults.fps,
-        memoryUsage: `${metricResults.memoryUsed} MB`,
-        overallPerformance: metricResults.overallPerformance // Добавлено
-      });
-
-    } catch (error) {
-      console.error(`Ошибка с библиотекой ${lib.name}:`, error);
-      results.push({ library: lib.name, renderTime: 'Ошибка' });
+async function runBenchmark() {
+    const results = [];
+    for (const lib of selectedLibraries) {
+        const map = await lib.init('map');
+        const metrics = await runBenchmarkForLibrary(lib.name);
+        results.push(metrics);
+        lib.cleanup(map);
     }
-  }
-
-  displayResults(results);
-  runButton.disabled = false; // Активируем кнопку
-});
-
-document.getElementById('clearResults').addEventListener('click', () => {
-  document.getElementById('benchmarkResults').innerHTML = '';
-});
+    benchmarkResults = results;
+    displayResults(results);
+}
 
 document.getElementById('downloadCSV').addEventListener('click', () => {
-  if (benchmarkResults.length === 0) {
-    alert('Нет результатов для скачивания.');
-    return;
-  }
-  const csvRows = benchmarkResults.map(result => [
-    result.library,
-    result.loadTime,
-    result.renderTime,
-    result.fps,
-    result.memoryUsage
-  ]);
-  let csvContent = 'Бибилиотека, Время загрузки, Время рендеринга, Средний FPS, Используемая память\n'
-    + csvRows.map(e => e.join(',')).join('\n');
+    if (benchmarkResults.length === 0) {
+        alert('Нет результатов для скачивания');
+        return;
+    }
 
-  const BOM = '\uFEFF';
-  const finalContent = BOM + csvContent;
-  const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + finalContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', 'benchmark_results.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    const csvRows = [
+        ['Библиотека', 'Кол-во точек', 'Время загрузки (мс)', 'Время рендеринга (мс)', 'Средний FPS', 'Используемая память (MB)', 'Общий показатель'],
+        ...benchmarkResults.map(result => [
+            result.library,
+            points,
+            result.dataLoadTime,
+            result.renderTime,
+            result.fps,
+            result.memoryUsed,
+            result.overallPerformance
+        ])
+    ];
+    
+    const BOM = '\uFEFF';
+    const csvContent = BOM + csvRows.map(row => row.join(';')).join('\n');
+    const blob = new Blob([csvContent], {type : 'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'benchmark_results.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+})
+
+document.getElementById('restartBenchmark').addEventListener('click', async () => {
+    document.getElementById('benchmarkResults').innerHTML = '';
+    await runBenchmark();
 });
 
 function displayResults(results) {
-  benchmarkResults = results;
-
-  if (results.length === 0) {
-    document.getElementById('benchmarkResults').innerHTML = '<p>Нет результатов для отображения.</p>';
-    return;
-  }
-
-  let tableHTML = `
+const tableHTML = `
     <table>
-      <thead>
-        <tr>
-          <th>Библиотека</th>
-          <th>Время загрузки</th>
-          <th>Время рендеринга</th>
-          <th>средний FPS</th>
-          <th>Используемая память</th>
-          <th>Средневзвешенное время</th> <!-- Добавлен новый столбец -->
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  results.forEach(result => {
-    tableHTML += `
-      <tr>
-        <td>${result.library}</td>
-        <td>${result.loadTime}</td>
-        <td>${result.renderTime}</td>
-        <td>${result.fps}</td>
-        <td>${result.memoryUsage}</td>
-        <td>${result.overallPerformance}</td> <!-- Добавлено значение общего показателя -->
-      </tr>
-    `;
-  });
-
-  tableHTML += `
-      </tbody>
+        <thead>
+            <tr>
+                <th>Библиотека</th>
+                <th>Кол-во точек</th>
+                <th>Время загрузки данных (мс)</th>
+                <th>Время рендеринга (мс)</th>
+                <th>Средний FPS</th>
+                <th>Используемая память (MB)</th>
+                <th>Общий показатель</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${results.map(result => {
+                console.log('Result object:', result); // Для отладки
+                return `
+                    <tr>
+                        <td>${result.library || 'N/A'}</td>
+                        <td>${points || 'N/A'}</td>
+                        <td>${result.dataLoadTime || 'N/A'}</td>
+                        <td>${result.renderTime || 'N/A'}</td>
+                        <td>${result.fps || 'N/A'}</td>
+                        <td>${result.memoryUsed || 'N/A'}</td>
+                        <td>${result.overallPerformance || 'N/A'}</td>
+                    </tr>
+                `;
+            }).join('')}
+        </tbody>
     </table>
-  `;
-
-  document.getElementById('benchmarkResults').innerHTML = tableHTML;
+`;
+document.getElementById('benchmarkResults').innerHTML = tableHTML;
 }
+
+runBenchmark();

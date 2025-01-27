@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head> 
+    <meta charset="UTF-8">
+    <title>Бенчмарк</title>
+    <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet">
+    <link href="node_modules/ol/ol.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body> 
+    <div id="map"></div>
+    <div class="progress-container">
+        <progress id="progressBar" value="0" max="100"></progress>
+    </div>
+    <div id="controls">
+        <h2>Результаты бенчмарка</h2>
+        <button id="restartBenchmark">Перезапустить бенчмарк</button>
+        <button id="downloadCSV">Скачать CSV</button>
+        <button onclick="window.location.href='index.html'">Вернуться к выбору</button>
+        <div id="benchmarkResults"></div>
+    </div>
+    <div id="popup" class="ol-popup"></div>
+    
+    <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
+    <script type="module" src="./benchmark.js"></script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 import maplibregl from 'maplibre-gl';
+import {getRandomFeatures} from './utils.js';
 
 export function initializeMapLibreGL(targetId) {
     if (window.mapLibreMap) {
@@ -33,14 +34,18 @@ export function initializeMapLibreGL(targetId) {
           center: [0, 0],
           zoom: 1
         });
-      
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const pointsCount = parseInt(urlParams.get('points')) || 10000;
+
         map.on('load', () => {
           fetch('world_coordinates.geojson')
             .then(response => response.json())
             .then(json => {
+              const selectedData = getRandomFeatures(json, pointsCount);
               map.addSource('points', {
                 type: 'geojson',
-                data: json
+                data: selectedData
               });
       
               map.addLayer({

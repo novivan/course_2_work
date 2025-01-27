@@ -6,6 +6,7 @@ import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import { Style, Circle as CircleStyle, Fill, Stroke } from 'ol/style';
 import { fromLonLat } from 'ol/proj';
+import {getRandomFeatures} from './utils.js'
 
 
 export function initializeOpenLayers(targetId) {
@@ -27,10 +28,14 @@ export function initializeOpenLayers(targetId) {
     })
   });
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const pointsCount = parseInt(urlParams.get('points')) || 10000;
+
   fetch('world_coordinates.geojson')
     .then(response => response.json())
     .then(json => {
-      const points = new GeoJSON().readFeatures(json, {
+      const selectedData = getRandomFeatures(json, pointsCount);
+      const points = new GeoJSON().readFeatures(selectedData, {
         featureProjection: 'EPSG:3857'
       });
 

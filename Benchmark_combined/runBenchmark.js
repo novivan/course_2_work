@@ -13,6 +13,9 @@ async function loadGeoJsonData() {
 }
 
 export async function runBenchmarkForLibrary(library) {
+  let progress = document.getElementById('progressBar');
+  progress.value = 0;
+
   const dataLoadTime = await loadGeoJsonData();
 
   let map;
@@ -23,6 +26,9 @@ export async function runBenchmarkForLibrary(library) {
   } else {
     console.error(`Не удалось найти карту для библиотеки ${library}`);
   }
+
+  progress.value = 10;
+
 
   const renderStart = performance.now();
   await performanceActions(map, library);
@@ -71,11 +77,12 @@ export async function runBenchmarkForLibrary(library) {
   ).toFixed(2);
 
   return {  
-    dataLoadTime,
-    renderTime,
+    library: library,
+    dataLoadTime: dataLoadTime,
+    renderTime: renderTime,
     fps: approximateFps,
     memoryUsed: memoryUsedMB,
-    overallPerformance
+    overallPerformance: overallPerformance
   };
 }
 
@@ -204,6 +211,7 @@ function performanceActions(map, library) {
 }
 
 function sequentiallyExecuteActions(map, actions, callback, library) {
+    let progress = document.getElementById('progressBar');
     let index = 0;
     function executeNext() {
       if (index >= actions.length) {
@@ -216,6 +224,7 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
           map.getView().animate( {zoom: action.value, duration: DUR }, () => {
             map.once('rendercomplete', () => {
               index++;
+              progress.value += 90/actions.length;
               executeNext();
             });
           });
@@ -223,6 +232,7 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
           map.getView().animate({center: fromLonLat(action.value), duration: DUR}, () => {
             map.once('rendercomplete', () => {
               index++;
+              progress.value += 90/actions.length;
               executeNext();
             });
           });
@@ -232,16 +242,19 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
           map.zoomTo(action.value, {duration : DUR});
           map.once('idle', () => {
             index++;
+            progress.value += 90/actions.length;
             executeNext();
           });
         } else if (action.type == 'pan') {
           map.easeTo({center: action.value, duration : DUR });
           map.once('idle', () => {
             index++;
+            progress.value += 90/actions.length;
             executeNext();
           });
         }
       }
     }
+    progress.value += 90/actions.length;
     executeNext();
 }
