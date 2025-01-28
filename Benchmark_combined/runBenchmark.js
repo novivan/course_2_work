@@ -3,13 +3,31 @@ import { fromLonLat } from 'ol/proj';
 let DUR = 500;
 
 async function loadGeoJsonData() {
+  /*
   const loadStart = performance.now();
   const response = await fetch('./world_coordinates.geojson');
   const geojsonData = await response.json();
 
-  // При необходимости добавить слой с geojsonData на карту
   const loadEnd = performance.now();
   return (loadEnd - loadStart).toFixed(2);
+  */
+  let progress = document.getElementById('progressBar');
+  const NUM_LOADS = 20;
+  let loadTimes = [];
+
+  for (let i = 0; i < NUM_LOADS; i++) {
+    const loadStart = performance.now();
+    const response = await fetch('./world_coordinates.geojson');
+    const geojsonData = await response.json();
+    const loadEnd = performance.now();
+
+    loadTimes.push(loadEnd - loadStart);
+    if (i % 2 == 0) {
+      progress.value = i / 2;
+    }
+  }
+  const averageLoadTime = (loadTimes.reduce((a, b) => a + b, 0)/ NUM_LOADS).toFixed(3);
+  return averageLoadTime;
 }
 
 export async function runBenchmarkForLibrary(library) {
@@ -210,6 +228,7 @@ function performanceActions(map, library) {
   });
 }
 
+
 function sequentiallyExecuteActions(map, actions, callback, library) {
     let progress = document.getElementById('progressBar');
     let index = 0;
@@ -224,7 +243,7 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
           map.getView().animate( {zoom: action.value, duration: DUR }, () => {
             map.once('rendercomplete', () => {
               index++;
-              progress.value += 90/actions.length;
+              progress.value = 10 + 90 * index/actions.length; 
               executeNext();
             });
           });
@@ -232,7 +251,7 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
           map.getView().animate({center: fromLonLat(action.value), duration: DUR}, () => {
             map.once('rendercomplete', () => {
               index++;
-              progress.value += 90/actions.length;
+              progress.value = 10 + 90 * index/actions.length; 
               executeNext();
             });
           });
@@ -242,19 +261,19 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
           map.zoomTo(action.value, {duration : DUR});
           map.once('idle', () => {
             index++;
-            progress.value += 90/actions.length;
+            progress.value = 10 + 90 * index/actions.length; 
             executeNext();
           });
         } else if (action.type == 'pan') {
           map.easeTo({center: action.value, duration : DUR });
           map.once('idle', () => {
             index++;
-            progress.value += 90/actions.length;
+            progress.value = 10 + 90 * index/actions.length;  
             executeNext();
           });
         }
       }
     }
-    progress.value += 90/actions.length;
+    progress.value = 10 + 90 * index/actions.length;
     executeNext();
 }

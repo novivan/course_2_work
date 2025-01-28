@@ -2,12 +2,13 @@ import { runBenchmarkForLibrary } from './runBenchmark.js';
 import { initializeOpenLayers } from './mainOL.js';
 import { initializeMapLibreGL } from './mainGL.js';
 
+let allBenchmarkResults = [];
+let benchmarkResults = [];
+
 const params = new URLSearchParams(window.location.search);
 const openLayersSelected = params.get('ol') === 'true';
 const mapLibreGLSelected = params.get('ml') === 'true';
 const points = parseInt(params.get('points'));
-
-
 const selectedLibraries = [];
 
 if (openLayersSelected) {
@@ -20,7 +21,6 @@ if (openLayersSelected) {
         }
     });
 }
-
 if (mapLibreGLSelected) {
     selectedLibraries.push({
         name: 'MapLibreGL',
@@ -32,8 +32,6 @@ if (mapLibreGLSelected) {
     });
 }
 
-let benchmarkResults = [];
-
 async function runBenchmark() {
     const results = [];
     for (const lib of selectedLibraries) {
@@ -42,26 +40,64 @@ async function runBenchmark() {
         results.push(metrics);
         lib.cleanup(map);
     }
+    
     benchmarkResults = results;
+    const timestamp = new Date().toISOString();
+    const resultsWithMetadata = results.map(result => ({
+        ...result,
+        timestamp,
+        points,
+        userAgent: navigator.userAgent
+    }));
+
+    try {
+        await fetch('http://localhost:3000/api/results', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(resultsWithMetadata)
+        });
+
+        const response = await fetch('http://localhost:3000/api/results');
+        allBenchmarkResults = await response.json();
+    } catch (error) {
+        console.error('Failed to communicate with server: ', error);
+    }
+
     displayResults(results);
 }
 
+function formatDate(isoString) {
+    const date = new Date(isoString);
+    return `${date.toLocaleDateString('ru-Ru', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    })} ${date.toLocaleTimeString('ru-Ru', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    })}`
+}
+
 document.getElementById('downloadCSV').addEventListener('click', () => {
-    if (benchmarkResults.length === 0) {
+    if (allBenchmarkResults.length === 0) {
         alert('Нет результатов для скачивания');
         return;
     }
 
     const csvRows = [
-        ['Библиотека', 'Кол-во точек', 'Время загрузки (мс)', 'Время рендеринга (мс)', 'Средний FPS', 'Используемая память (MB)', 'Общий показатель'],
-        ...benchmarkResults.map(result => [
+        ['Дата и время', 'Библиотека', 'Кол-во точек', 'Среднее Время загрузки (мс)', 'Время рендеринга (мс)', 'Средний FPS', 'Используемая память (MB)', 'Средневзвешенный показатель времени работы'],
+        ...allBenchmarkResults.map(result => [
+            `="${formatDate(result.timestamp)}"`,
             result.library,
-            points,
-            result.dataLoadTime,
-            result.renderTime,
-            result.fps,
-            result.memoryUsed,
-            result.overallPerformance
+            `="${result.points}"`,
+            `="${result.dataLoadTime}"`,
+            `="${result.renderTime}"`,
+            `="${result.fps}"`,
+            `="${result.memoryUsed}"`,
+            `="${result.overallPerformance}"`
         ])
     ];
     
@@ -72,7 +108,7 @@ document.getElementById('downloadCSV').addEventListener('click', () => {
     const link = document.createElement('a');
 
     link.setAttribute('href', url);
-    link.setAttribute('download', 'benchmark_results.csv');
+    link.setAttribute('download', `benchmark_results_${new Date().toISOString()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -90,11 +126,11 @@ const tableHTML = `
             <tr>
                 <th>Библиотека</th>
                 <th>Кол-во точек</th>
-                <th>Время загрузки данных (мс)</th>
+                <th>Среднее Время загрузки данных (мс)</th>
                 <th>Время рендеринга (мс)</th>
                 <th>Средний FPS</th>
                 <th>Используемая память (MB)</th>
-                <th>Общий показатель</th>
+                <th>Средневзвешенный показатель времени работы</th>
             </tr>
         </thead>
         <tbody>

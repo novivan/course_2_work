@@ -1,16 +1,21 @@
 {
     "name": "benchmark_combined",
     "version": "1.0.0",
+    "type": "module",
     "scripts": {
-      "start": "vite",
-      "build": "vite build",
-      "serve": "vite preview"
+        "start": "vite",
+        "build": "vite build",
+        "serve": "vite preview",
+        "server": "node server/server.js"
     },
     "devDependencies": {
-      "vite": "^6.0.5"
+        "vite": "^6.0.5"
     },
     "dependencies": {
-      "ol": "latest",
-      "maplibre-gl": "latest"
+        "express": "^4.21.2",
+        "cors": "^2.8.5",
+        "lowdb": "1.0.0",
+        "maplibre-gl": "latest",
+        "ol": "latest"
     }
-  }
+}
