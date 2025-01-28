@@ -3,14 +3,6 @@ import { fromLonLat } from 'ol/proj';
 let DUR = 500;
 
 async function loadGeoJsonData() {
-  /*
-  const loadStart = performance.now();
-  const response = await fetch('./world_coordinates.geojson');
-  const geojsonData = await response.json();
-
-  const loadEnd = performance.now();
-  return (loadEnd - loadStart).toFixed(2);
-  */
   let progress = document.getElementById('progressBar');
   const NUM_LOADS = 20;
   let loadTimes = [];

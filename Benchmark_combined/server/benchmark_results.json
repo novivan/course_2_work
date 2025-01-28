@@ -175,6 +175,105 @@
       "timestamp": "2025-01-28T10:17:49.303Z",
       "points": 55555,
       "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "OpenLayers",
+      "dataLoadTime": "729.975",
+      "renderTime": "42786.20",
+      "fps": "60.2",
+      "memoryUsed": "35.85",
+      "overallPerformance": "347.29",
+      "timestamp": "2025-01-28T11:40:30.524Z",
+      "points": 10000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "OpenLayers",
+      "dataLoadTime": "731.205",
+      "renderTime": "42887.60",
+      "fps": "60.2",
+      "memoryUsed": "52.61",
+      "overallPerformance": "351.46",
+      "timestamp": "2025-01-28T11:42:14.205Z",
+      "points": 10000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "OpenLayers",
+      "dataLoadTime": "699.135",
+      "renderTime": "41740.20",
+      "fps": "60.2",
+      "memoryUsed": "253.16",
+      "overallPerformance": "379.45",
+      "timestamp": "2025-01-28T11:48:07.553Z",
+      "points": 1283,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "OpenLayers",
+      "dataLoadTime": "734.855",
+      "renderTime": "41749.50",
+      "fps": "60.1",
+      "memoryUsed": "21.37",
+      "overallPerformance": "338.26",
+      "timestamp": "2025-01-28T11:49:33.969Z",
+      "points": 1283,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "OpenLayers",
+      "dataLoadTime": "704.670",
+      "renderTime": "41673.20",
+      "fps": "60.2",
+      "memoryUsed": "248.92",
+      "overallPerformance": "378.90",
+      "timestamp": "2025-01-28T11:54:24.987Z",
+      "points": 1283,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "OpenLayers",
+      "dataLoadTime": "703.215",
+      "renderTime": "41711.70",
+      "fps": "60.1",
+      "memoryUsed": "274.17",
+      "overallPerformance": "384.05",
+      "timestamp": "2025-01-28T12:00:34.784Z",
+      "points": 1283,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "OpenLayers",
+      "dataLoadTime": "1126.185",
+      "renderTime": "371720.80",
+      "fps": "60.7",
+      "memoryUsed": "1981.32",
+      "overallPerformance": "2964.33",
+      "timestamp": "2025-01-28T12:19:54.786Z",
+      "points": 1000000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "MapLibreGL",
+      "dataLoadTime": "720.170",
+      "renderTime": "73091.50",
+      "fps": "60.1",
+      "memoryUsed": "99.69",
+      "overallPerformance": "559.44",
+      "timestamp": "2025-01-28T12:23:09.828Z",
+      "points": 500000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "MapLibreGL",
+      "dataLoadTime": "1119.040",
+      "renderTime": "112358.50",
+      "fps": "60.2",
+      "memoryUsed": "180.49",
+      "overallPerformance": "888.30",
+      "timestamp": "2025-01-28T12:26:59.295Z",
+      "points": 1000000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
     }
   ]
 }

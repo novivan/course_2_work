@@ -3,7 +3,6 @@ import { initializeOpenLayers } from './mainOL.js';
 import { initializeMapLibreGL } from './mainGL.js';
 
 let allBenchmarkResults = [];
-let benchmarkResults = [];
 
 const params = new URLSearchParams(window.location.search);
 const openLayersSelected = params.get('ol') === 'true';
@@ -41,7 +40,6 @@ async function runBenchmark() {
         lib.cleanup(map);
     }
     
-    benchmarkResults = results;
     const timestamp = new Date().toISOString();
     const resultsWithMetadata = results.map(result => ({
         ...result,
@@ -83,7 +81,7 @@ function formatDate(isoString) {
 
 document.getElementById('downloadCSV').addEventListener('click', () => {
     if (allBenchmarkResults.length === 0) {
-        alert('Нет результатов для скачивания');
+        alert('Пока нет результатов для скачивания');
         return;
     }
 
@@ -135,7 +133,7 @@ const tableHTML = `
         </thead>
         <tbody>
             ${results.map(result => {
-                console.log('Result object:', result); // Для отладки
+                console.log('Result object:', result);
                 return `
                     <tr>
                         <td>${result.library || 'N/A'}</td>
