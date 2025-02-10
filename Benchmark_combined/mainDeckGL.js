@@ -70,7 +70,6 @@ export function initializeDeckGL(targetId) {
         const addDeckOverlay = () => {
           console.log('[DeckGL] Карта готова. Добавляем overlay Deck.gl...');
           map.addControl(deckOverlay);
-          // Пробуем получить Deck из публичного или приватного свойства
           const deckInstance = deckOverlay.deck || deckOverlay._deck;
           console.log('[DeckGL] Экземпляр Deck:', deckInstance);
           window.deckGLMap = deckInstance;

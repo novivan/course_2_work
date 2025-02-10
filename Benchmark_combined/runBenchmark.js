@@ -292,15 +292,6 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
             executeNext();
           });
         }
-      } else if (library === 'DeckGL') {
-        if (action.type == 'zoom') {
-          map.setProps({viewState: {zoom: action.value}});
-        } else if (action.type == 'pan') {
-          map.setProps({viewState: {longitude: action.value[0], latitude: action.value[1]}});
-        }
-        index++;
-        progress.value = 10 + 90 * index/actions.length;
-        executeNext();
       }
     }
     progress.value = 10 + 90 * index/actions.length;
