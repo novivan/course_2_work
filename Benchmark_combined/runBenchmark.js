@@ -33,6 +33,8 @@ export async function runBenchmarkForLibrary(library) {
     map = window.openLayersMap;
   } else if (library === 'MapLibreGL' && window.mapLibreMap) {
     map = window.mapLibreMap;
+  } else if (library === 'DeckGL' && window.deckGLMap) {
+    map = window.deckGLMap;
   } else {
     console.error(`Не удалось найти карту для библиотеки ${library}`);
   }
@@ -264,6 +266,15 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
             executeNext();
           });
         }
+      } else if (library === 'DeckGL') {
+        if (action.type == 'zoom') {
+          map.setProps({viewState: {zoom: action.value}});
+        } else if (action.type == 'pan') {
+          map.setProps({viewState: {longitude: action.value[0], latitude: action.value[1]}});
+        }
+        index++;
+        progress.value = 10 + 90 * index/actions.length;
+        executeNext();
       }
     }
     progress.value = 10 + 90 * index/actions.length;

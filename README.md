@@ -5,6 +5,10 @@
 npm install stats.js
 npm install express cors
 ```
+Если не хватает каких-либо библиотек:
+```
+npm install @deck.gl/core @deck.gl/layers @deck.gl/mapbox maplibre-gl
+```
 ___
 # Бенчмаркинг (как заставить библиотеки рисовать) 
 ---

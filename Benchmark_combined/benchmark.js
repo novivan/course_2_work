@@ -1,12 +1,15 @@
 import { runBenchmarkForLibrary } from './runBenchmark.js';
 import { initializeOpenLayers } from './mainOL.js';
 import { initializeMapLibreGL } from './mainGL.js';
+import { initializeDeckGL } from './mainDeckGL.js';
 
 let allBenchmarkResults = [];
 
 const params = new URLSearchParams(window.location.search);
 const openLayersSelected = params.get('ol') === 'true';
 const mapLibreGLSelected = params.get('ml') === 'true';
+const deckGLSelected = params.get('deck') === 'true';
+
 const points = parseInt(params.get('points'));
 const selectedLibraries = [];
 
@@ -27,6 +30,16 @@ if (mapLibreGLSelected) {
         cleanup: (map) => {
             map.remove();
             window.mapLibreMap = null;
+        }
+    });
+}
+if (deckGLSelected) {
+    selectedLibraries.push({
+        name: 'DeckGL',
+        init: initializeDeckGL,
+        cleanup: (map) => {
+            map.remove();
+            window.deckGLMap = null;
         }
     });
 }

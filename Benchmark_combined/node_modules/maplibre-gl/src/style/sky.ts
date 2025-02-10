@@ -1,10 +1,10 @@
-import {DataConstantProperty, PossiblyEvaluated, Properties, Transitionable, Transitioning, TransitionParameters} from './properties';
+import {DataConstantProperty, type PossiblyEvaluated, Properties, Transitionable, type Transitioning, type TransitionParameters} from './properties';
 import {Evented} from '../util/evented';
 import {EvaluationParameters} from './evaluation_parameters';
 import {emitValidationErrors, validateSky, validateStyle} from './validate_style';
 import {extend} from '../util/util';
-import {Color, latest as styleSpec} from '@maplibre/maplibre-gl-style-spec';
-import {Mesh} from '../render/mesh';
+import {type Color, latest as styleSpec} from '@maplibre/maplibre-gl-style-spec';
+import {type Mesh} from '../render/mesh';
 import type {StylePropertySpecification, SkySpecification} from '@maplibre/maplibre-gl-style-spec';
 import type {StyleSetterOptions} from './style';
 
@@ -47,6 +47,7 @@ export class Sky extends Evented {
      * This is used to cache the gl mesh for the sky, it should be initialized only once.
      */
     mesh: Mesh | undefined;
+    atmosphereMesh: Mesh | undefined;
     _transitionable: Transitionable<SkyProps>;
     _transitioning: Transitioning<SkyProps>;
 
