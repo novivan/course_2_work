@@ -1,4 +1,5 @@
 import { fromLonLat } from 'ol/proj';
+import { LinearInterpolator } from '@deck.gl/core';
 
 let DUR = 500;
 
@@ -232,7 +233,32 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
         return;
       }
       const action = actions[index];
-      if (library == 'OpenLayers') {
+      if (library === 'DeckGL') {
+        const currentViewState = map.props.viewState || {};
+        let newViewState = {};
+        let interpFields = [];
+        if (action.type === 'zoom') {
+          newViewState = { ...currentViewState, zoom: action.value };
+          interpFields = ['zoom'];
+        } else if (action.type === 'pan') {
+          newViewState = { 
+            ...currentViewState, 
+            longitude: action.value[0], 
+            latitude: action.value[1] 
+          };
+          interpFields = ['longitude', 'latitude'];
+        }
+        map.setProps({
+          viewState: newViewState,
+          transitionDuration: DUR,
+          transitionInterpolator: new LinearInterpolator(interpFields)
+        });
+        setTimeout(() => {
+          index++;
+          progress.value = 10 + 90 * index / actions.length;
+          executeNext();
+        }, DUR);
+      } else if (library == 'OpenLayers') {
         if (action.type == 'zoom') {
           map.getView().animate( {zoom: action.value, duration: DUR }, () => {
             map.once('rendercomplete', () => {
