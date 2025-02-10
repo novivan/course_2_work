@@ -37,9 +37,9 @@ if (deckGLSelected) {
     selectedLibraries.push({
         name: 'DeckGL',
         init: initializeDeckGL,
-        cleanup: (map) => {
-            map.remove();
-            window.deckGLMap = null;
+        cleanup: (deckInstance) => {
+            deckInstance.finalize && deckInstance.finalize();
+            window.deckGLInstance = null;
         }
     });
 }
@@ -48,6 +48,21 @@ async function runBenchmark() {
     const results = [];
     for (const lib of selectedLibraries) {
         const map = await lib.init('map');
+
+        // Wait for DeckGL to be initialized
+        if (lib.name === 'DeckGL') {
+            await new Promise(resolve => {
+                const checkDeckGL = () => {
+                    if (window.deckGLMap) {
+                        resolve();
+                    } else {
+                        setTimeout(checkDeckGL, 100); // Check every 100ms
+                    }
+                };
+                checkDeckGL();
+            });
+        }
+
         const metrics = await runBenchmarkForLibrary(lib.name);
         results.push(metrics);
         lib.cleanup(map);
@@ -131,13 +146,12 @@ document.getElementById('restartBenchmark').addEventListener('click', async () =
 });
 
 function displayResults(results) {
-const tableHTML = `
-    <table>
+    let tableHTML = `
+    <table class="benchmark-table">
         <thead>
             <tr>
                 <th>Библиотека</th>
-                <th>Кол-во точек</th>
-                <th>Среднее Время загрузки данных (мс)</th>
+                <th>Среднее Время загрузки (мс)</th>
                 <th>Время рендеринга (мс)</th>
                 <th>Средний FPS</th>
                 <th>Используемая память (MB)</th>
@@ -146,11 +160,9 @@ const tableHTML = `
         </thead>
         <tbody>
             ${results.map(result => {
-                console.log('Result object:', result);
                 return `
                     <tr>
-                        <td>${result.library || 'N/A'}</td>
-                        <td>${points || 'N/A'}</td>
+                        <td>${result.library}</td>
                         <td>${result.dataLoadTime || 'N/A'}</td>
                         <td>${result.renderTime || 'N/A'}</td>
                         <td>${result.fps || 'N/A'}</td>
@@ -162,7 +174,7 @@ const tableHTML = `
         </tbody>
     </table>
 `;
-document.getElementById('benchmarkResults').innerHTML = tableHTML;
+    document.getElementById('benchmarkResults').innerHTML = tableHTML;
 }
 
 runBenchmark();
