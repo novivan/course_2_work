@@ -8,16 +8,23 @@ export function initializeLeaflet(targetId) {
         window.leafletMap = null;
     }
 
-    const map = L.map(targetId).setView([0, 0], 2);
+    const map = L.map(targetId, { worldCopyJump: true }).setView([0, 0], 2);
+    window.leafletMap = map;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Создаем плиточный слой и ждём его загрузки
+    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19
-    }).addTo(map);
+    });
+    const tileLayerPromise = new Promise(resolve => {
+        tileLayer.on('load', resolve);
+    });
+    tileLayer.addTo(map);
 
     const urlParams = new URLSearchParams(window.location.search);
     const pointsCount = parseInt(urlParams.get('points')) || 10000;
 
-    fetch('world_coordinates.geojson')
+    // Загружаем и добавляем GeoJSON-слой
+    const geojsonPromise = fetch('world_coordinates.geojson')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Ошибка загрузки GeoJSON: ${response.status}`);
@@ -27,7 +34,8 @@ export function initializeLeaflet(targetId) {
         .then(json => {
             console.log('[Leaflet] Данные GeoJSON успешно загружены');
             const selectedData = getRandomFeatures(json, pointsCount);
-            L.geoJSON(selectedData, {
+            // Предполагается, что опции для отрисовки настроены в функции pointToLayer
+            const geojsonLayer = L.geoJSON(selectedData, {
                 pointToLayer: function(feature, latlng) {
                     return L.circleMarker(latlng, {
                         radius: 6,
@@ -37,12 +45,17 @@ export function initializeLeaflet(targetId) {
                         fillOpacity: 1
                     });
                 }
-            }).addTo(map);
+            });
+            geojsonLayer.addTo(map);
         })
         .catch(error => {
             console.error(error);
         });
 
-    window.leafletMap = map;
-    return map;
+
+        return Promise.all([tileLayerPromise, geojsonPromise]).then(() => {
+            map.setView([0, 0], 2);
+            // Небольшая задержка для гарантии отрисовки
+            return new Promise(resolve => setTimeout(() => resolve(map), 100));
+        });
 }

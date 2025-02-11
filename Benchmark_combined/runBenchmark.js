@@ -307,12 +307,12 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
             executeNext();
           }, DUR);
         } else if (action.type === 'pan') {
-          map.panTo(action.value, { animate: true, duration: DUR / 1000 });
-          setTimeout(() => {
+          map.panTo(L.latLng(action.value[1], action.value[0]), { animate: true, duration: DUR / 1000 });
+          map.once('moveend', () => {
             index++;
             progress.value = 10 + 90 * index / actions.length;
             executeNext();
-          }, DUR);
+          });
         }
       }
     }
