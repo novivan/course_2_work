@@ -39,6 +39,10 @@ if (deckGLSelected) {
         init: initializeDeckGL,
         cleanup: (deckInstance) => {
             deckInstance.finalize && deckInstance.finalize();
+            if (window.deckGLBaseMap) {
+                window.deckGLBaseMap.remove();
+                window.deckGLBaseMap = null;
+            }
             window.deckGLInstance = null;
         }
     });

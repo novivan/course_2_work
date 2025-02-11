@@ -9,6 +9,10 @@ export function initializeDeckGL(targetId) {
     window.deckGLMap.finalize();
     window.deckGLMap = null;
   }
+  if (window.deckGLBaseMap) {
+    window.deckGLBaseMap.remove();
+    window.deckGLBaseMap = null;
+  }
 
   return new Promise((resolve, reject) => {
     console.log('[DeckGL] Создаём карту MapLibre...');
@@ -36,6 +40,7 @@ export function initializeDeckGL(targetId) {
       center: [0, 0],
       zoom: 1
     });
+    window.deckGLBaseMap = map;
 
     const urlParams = new URLSearchParams(window.location.search);
     const pointsCount = parseInt(urlParams.get('points')) || 10000;
@@ -64,7 +69,40 @@ export function initializeDeckGL(targetId) {
             })
           ],
           views: new MapView({ repeat: true }),
-          controller: true
+          controller: true,
+          getViewState: () => ({
+            longitude: map.getCenter().lng,
+            latitude: map.getCenter().lat,
+            zoom: map.getZoom(),
+            pitch: map.getPitch(),
+            bearing: map.getBearing()
+          })
+        });
+
+
+        // Синхронизация карты и слоя Deck.gl
+        map.on('move', () => {
+          deckOverlay.setProps({
+            viewState: {
+              longitude: map.getCenter().lng,
+              latitude: map.getCenter().lat,
+              zoom: map.getZoom(),
+              pitch: map.getPitch(),
+              bearing: map.getBearing()
+            }
+          });
+        });
+        
+        map.on('zoom', () => {
+          deckOverlay.setProps({
+            viewState: {
+              longitude: map.getCenter().lng,
+              latitude: map.getCenter().lat,
+              zoom: map.getZoom(),
+              pitch: map.getPitch(),
+              bearing: map.getBearing()
+            }
+          });
         });
 
         const addDeckOverlay = () => {
@@ -74,6 +112,7 @@ export function initializeDeckGL(targetId) {
           console.log('[DeckGL] Экземпляр Deck:', deckInstance);
           window.deckGLMap = deckInstance;
           resolve(deckInstance);
+          deckInstance.redraw(true);
         };
 
         if (map.loaded()) {
@@ -81,6 +120,8 @@ export function initializeDeckGL(targetId) {
         } else {
           map.on('load', addDeckOverlay);
         }
+
+        
       })
       .catch(error => {
         console.error('[DeckGL] Ошибка при загрузке или инициализации:', error);
