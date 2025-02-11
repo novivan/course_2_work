@@ -17,6 +17,7 @@
         "@deck.gl/mapbox": "^9.1.0",
         "cors": "^2.8.5",
         "express": "^4.21.2",
+        "leaflet": "^1.9.4",
         "lowdb": "1.0.0",
         "maplibre-gl": "^5.1.0",
         "ol": "latest"

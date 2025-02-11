@@ -36,6 +36,8 @@ export async function runBenchmarkForLibrary(library) {
     map = window.mapLibreMap;
   } else if (library === 'DeckGL' && window.deckGLMap) {
     map = window.deckGLMap;
+  } else if (library === 'Leaflet' && window.leafletMap) { // добавляем для Leaflet
+    map = window.leafletMap;
   } else {
     console.error(`Не удалось найти карту для библиотеки ${library}`);
   }
@@ -293,6 +295,24 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
             progress.value = 10 + 90 * index/actions.length;  
             executeNext();
           });
+        }
+      } else if (library == 'Leaflet') {
+        // Добавляем ветку для Leaflet
+        if (action.type === 'zoom') {
+          map.setZoom(action.value);
+          // Эмулируем завершение анимации через setTimeout
+          setTimeout(() => {
+            index++;
+            progress.value = 10 + 90 * index / actions.length;
+            executeNext();
+          }, DUR);
+        } else if (action.type === 'pan') {
+          map.panTo(action.value, { animate: true, duration: DUR / 1000 });
+          setTimeout(() => {
+            index++;
+            progress.value = 10 + 90 * index / actions.length;
+            executeNext();
+          }, DUR);
         }
       }
     }
