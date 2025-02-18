@@ -319,27 +319,24 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
         }
       } else if (library == 'D3') {
         if (action.type === 'zoom') {
-          d3.select(map)
-            .transition()
-            .duration(DUR)
-            .attr("transform", `scale(${action.value})`)
-            .on("end", () => {
-              index++;
-              progress.value = 10 + 90 * index/actions.length;
-              executeNext();
-            });
+          // Используем API MapLibre GL для зума
+          map.zoomTo(action.value, { duration: DUR });
+          map.once('idle', () => {
+            index++;
+            progress.value = 10 + 90 * index/actions.length;
+            executeNext();
+          });
         } else if (action.type == 'pan') {
-          const translateX = action.value[0] * 10;
-          const translateY = action.value[1] * 10;
-          d3.select(map)
-            .transition()
-            .duration(DUR)
-            .attr("transform", `translate(${translateX}, ${translateY})`)
-            .on("end", () => {
-              index++;
-              progress.value = 10 + 90 * index / actions.length;
-              executeNext();
-            });
+          // Используем API MapLibre GL для перемещения
+          map.easeTo({
+            center: action.value,
+            duration: DUR
+          });
+          map.once('idle', () => {
+            index++;
+            progress.value = 10 + 90 * index/actions.length;
+            executeNext();
+          });
         }
       }
     }

@@ -1,84 +1,147 @@
 import * as d3 from 'd3';
-import { tile as tileFn } from 'd3-tile';
+import maplibregl from 'maplibre-gl';
 import { getRandomFeatures } from './utils.js';
+import _ from 'lodash';
+
 
 export function initializeD3(targetId) {
-  // Получаем контейнер по ID и очищаем его содержимое
-  const container = document.getElementById(targetId);
-  container.innerHTML = "";
-
-  // Получаем размеры контейнера (например, задаются через CSS: #map { width: 100%; height: 70vh; })
-  const width = container.clientWidth;
-  const height = container.clientHeight;
-  console.log(width, height);
-
-  // Создаем SVG, который занимает весь контейнер
-  const svg = d3.select(container)
-    .append('svg')
-    .attr('width', '100%')
-    .attr('height', '100%')
-    .attr('viewBox', `0 0 ${width} ${height}`)
-    .attr('preserveAspectRatio', 'xMidYMin meet');
-
-  // Создаем основную группу, к которой будут привязаны все элементы карты.
-  // Именно этот элемент (mapGroup) будет возвращен, чтобы benchmark мог менять его transform.
-  const mapGroup = svg.append('g').attr('class', 'mapGroup');
-
-  // Создаем меркаторскую проекцию, центрируя карту по контейнеру
-  // Здесь масштаб рассчитывается так, чтобы ширина земного шара (360°) равнялась ширине контейнера.
-  const projection = d3.geoMercator()
-    .scale(width / (2 * Math.PI))
-    .translate([width / 2, height / 2]);
-  const path = d3.geoPath().projection(projection);
-
-  // Генератор плиток для OpenStreetMap.
-  // Требуется умножение масштаба на 2π, как требует d3-tile.
-  const tileGenerator = tileFn()
-    .size([width, height])
-    .scale(projection.scale() * 2 * Math.PI)
-    .translate(projection.translate());
-
-
-  const tiles = tileGenerator();
-  const tileSize = 256;
-
-  // Добавляем группу для подложки (OSM-тайлы) внутрь mapGroup
-  const raster = mapGroup.append('g').attr('class', 'raster');
-  raster.selectAll('image')
-    .data(tiles)
-    .enter()
-    .append('image')
-    .attr('xlink:href', d => `https://a.tile.openstreetmap.org/${d[2]}/${d[0]}/${d[1]}.png`)
-    .attr('x', d => (d[0] + tiles.translate[0] / tileSize) * tileSize)
-    .attr('x', d => d[0] * tileSize)
-    //.attr('y', d => (d[1] + tiles.translate[1] / tileSize) * tileSize)
-    .attr('y', d => d[1] * tileSize)
-    //.attr('width', tileSize)
-    .attr('height', tileSize);
-
-  // Загружаем GeoJSON, отбираем нужное количество точек и отрисовываем их
-  const pointsLayer = mapGroup.append('g').attr('class', 'points-layer');
-  const urlParams = new URLSearchParams(window.location.search);
-  const pointsCount = parseInt(urlParams.get('points')) || 10000;
-  d3.json('world_coordinates.geojson')
-    .then(json => {
-      const selectedData = getRandomFeatures(json, pointsCount);
-      const features = selectedData.features || selectedData;
-
-      pointsLayer.selectAll('circle')
-        .data(features)
-        .enter()
-        .append('circle')
-        .attr('cx', d => projection(d.geometry.coordinates)[0])
-        .attr('cy', d => projection(d.geometry.coordinates)[1])
-        .attr('r', 4)
-        .attr('fill', 'red')
-        .attr('stroke', 'white')
-        .attr('stroke-width', 1);
-    })
-    .catch(err => console.error('[D3] Ошибка загрузки/отрисовки GeoJSON:', err));
-
-  // Возвращаем основную группу, чтобы benchmark мог применять к ней переходы (pan/zoom)
-  window.d3Map = mapGroup.node();
-  return mapGroup.node();
-}
+    return new Promise((resolve, reject) => {
+      const container = document.getElementById(targetId);
+      if (!container) {
+        reject('Контейнер для карты не найден!');
+        return;
+      }
+  
+      const map = new maplibregl.Map({
+                container: targetId,
+                style: {
+                  version: 8,
+                  sources: {
+                    'osm-standard': {
+                      type: 'raster',
+                      tiles: [
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+                      ],
+                      tileSize: 256
+                    }
+                  },
+                  layers: [
+                    {
+                      id: 'osm-standard-layer',
+                      type: 'raster',
+                      source: 'osm-standard',
+                      minzoom: 0,
+                      maxzoom: 19
+                    }
+                  ]
+                },
+                center: [0, 0],
+                zoom: 1
+              });
+  
+      map.on('load', () => {
+        // Создаем отдельный div для SVG
+        const overlayContainer = document.createElement('div');
+        overlayContainer.style.position = 'absolute';
+        overlayContainer.style.top = '0';
+        overlayContainer.style.left = '0';
+        overlayContainer.style.pointerEvents = 'none';
+        container.appendChild(overlayContainer);
+  
+        // Создаем SVG в новом контейнере
+        const svg = d3.select(overlayContainer)
+                      .append('svg')
+                      .style('position', 'absolute')
+                      .style('top', 0)
+                      .style('left', 0)
+                      .attr('width', container.offsetWidth)
+                      .attr('height', container.offsetHeight);
+  
+        // Создаем группу для точек
+        const pointGroup = svg.append('g');
+  
+        function renderPoints(geojson) {
+            // Создаем расширенный набор данных только один раз
+            const expandedPointsData = geojson.features.flatMap(feat => {
+              const lon = feat.geometry.coordinates[0];
+              const lat = feat.geometry.coordinates[1];
+              return [
+                { coordinates: [lon, lat] },
+                { coordinates: [lon + 360, lat] },
+                { coordinates: [lon - 360, lat] }
+              ];
+            });
+          
+            // Используем один enter() для всех точек
+            const points = pointGroup.selectAll('circle')
+              .data(expandedPointsData);
+          
+            points.exit().remove();
+          
+            const enterPoints = points.enter()
+              .append('circle')
+              .attr('r', 6)
+              .style('fill', 'blue')
+              .style('stroke', '#FFFFFF')
+              .style('stroke-width', '2px')
+              .style('display', 'none');
+          
+            // Объединяем enter и update selections
+            const allPoints = enterPoints.merge(points);
+          
+            function updatePositions() {
+              // Получаем границы видимой области один раз
+              const [[minLng], [maxLng]] = map.getBounds().toArray();
+              const width = container.offsetWidth;
+              const height = container.offsetHeight;
+          
+              // Обновляем все точки за одну операцию
+              allPoints.each(function(d) {
+                const point = map.project(d.coordinates);
+                const visible = point.x >= 0 && point.x <= width && 
+                               point.y >= 0 && point.y <= height;
+                
+                // Обновляем только если точка изменила состояние видимости
+                if (visible) {
+                  d3.select(this)
+                    .style('display', 'block')
+                    .attr('cx', point.x)
+                    .attr('cy', point.y);
+                } else {
+                  d3.select(this)
+                    .style('display', 'none');
+                }
+              });
+            }
+          
+            // Используем throttle для ограничения частоты обновлений
+            const throttledUpdate = _.throttle(updatePositions, 16); // 60fps
+          
+            map.on('move', throttledUpdate);
+            map.on('resize', () => {
+              svg
+                .attr('width', container.offsetWidth)
+                .attr('height', container.offsetHeight);
+              throttledUpdate();
+            });
+          
+            updatePositions();
+          }
+  
+        d3.json('world_coordinates.geojson')
+          .then(data => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pointsCount = parseInt(urlParams.get('points')) || 10000;
+            const selectedData = getRandomFeatures(data, pointsCount);
+            renderPoints(selectedData);
+            
+            window.d3Map = map;
+            resolve({ map, svg });
+          })
+          .catch(error => {
+            console.error('Ошибка загрузки GeoJSON:', error);
+            reject(error);
+          });
+      });
+    });
+  }

@@ -4,6 +4,7 @@ import { initializeMapLibreGL } from './mainGL.js';
 import { initializeDeckGL } from './mainDeckGL.js';
 import { initializeLeaflet } from './mainLeaflet.js';
 import { initializeD3} from './mainD3.js';
+import * as d3 from 'd3';
 
 let allBenchmarkResults = [];
 
@@ -65,8 +66,15 @@ if (d3Selected) {
     selectedLibraries.push({
         name: 'D3',
         init: initializeD3,
-        cleanup: (map) => {
-            map.innnerHTML = "";
+        cleanup: (result) => {
+            if (result && result.map) {
+                result.map.remove();
+            }
+            const container = document.getElementById('map');
+            if (container) {
+                // Теперь d3 доступен благодаря импорту
+                d3.select(container).selectAll('svg').remove();
+            }
             window.d3Map = null;
         }
     });
