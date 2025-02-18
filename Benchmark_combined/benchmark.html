@@ -8,11 +8,11 @@
     <link href="style.css" rel="stylesheet">
 </head>
 <body> 
-    <div id="map"></div>
-    <div class="progress-container">
+    <div id="map" z-index="0" position: absolute></div>
+    <div class="progress-container" z-index="1" position: absolute>
         <progress id="progressBar" value="0" max="100"></progress>
     </div>
-    <div id="controls">
+    <div id="controls" z-index="2" position: absolute>
         <h2>Результаты бенчмарка</h2>
         <button id="restartBenchmark">Перезапустить бенчмарк</button>
         <button id="downloadCSV">Скачать CSV</button>
