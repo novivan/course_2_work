@@ -560,6 +560,17 @@
       "timestamp": "2025-02-18T18:06:31.578Z",
       "points": 70000,
       "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "D3",
+      "dataLoadTime": "557.010",
+      "renderTime": "100034.70",
+      "fps": "60.1",
+      "memoryUsed": "56.58",
+      "overallPerformance": "707.70",
+      "timestamp": "2025-02-18T18:24:09.642Z",
+      "points": 100000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
     }
   ]
 }
