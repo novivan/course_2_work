@@ -505,6 +505,61 @@
       "timestamp": "2025-02-18T17:39:03.643Z",
       "points": 100000,
       "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "OpenLayers",
+      "dataLoadTime": "602.635",
+      "renderTime": "63393.70",
+      "fps": "60.6",
+      "memoryUsed": "143.93",
+      "overallPerformance": "488.11",
+      "timestamp": "2025-02-18T17:59:30.053Z",
+      "points": 70000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "MapLibreGL",
+      "dataLoadTime": "538.005",
+      "renderTime": "61738.70",
+      "fps": "60.2",
+      "memoryUsed": "47.05",
+      "overallPerformance": "449.60",
+      "timestamp": "2025-02-18T18:00:58.737Z",
+      "points": 70000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "DeckGL",
+      "dataLoadTime": "531.310",
+      "renderTime": "61156.40",
+      "fps": "60.1",
+      "memoryUsed": "48.40",
+      "overallPerformance": "445.20",
+      "timestamp": "2025-02-18T18:02:18.989Z",
+      "points": 70000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "Leaflet",
+      "dataLoadTime": "547.305",
+      "renderTime": "45599.10",
+      "fps": "50.3",
+      "memoryUsed": "233.26",
+      "overallPerformance": "387.50",
+      "timestamp": "2025-02-18T18:04:40.095Z",
+      "points": 70000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "D3",
+      "dataLoadTime": "549.730",
+      "renderTime": "91394.70",
+      "fps": "60.1",
+      "memoryUsed": "47.92",
+      "overallPerformance": "647.79",
+      "timestamp": "2025-02-18T18:06:31.578Z",
+      "points": 70000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
     }
   ]
 }
