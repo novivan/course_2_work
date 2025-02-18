@@ -3,6 +3,7 @@ import { initializeOpenLayers } from './mainOL.js';
 import { initializeMapLibreGL } from './mainGL.js';
 import { initializeDeckGL } from './mainDeckGL.js';
 import { initializeLeaflet } from './mainLeaflet.js';
+import { initializeD3} from './mainD3.js';
 
 let allBenchmarkResults = [];
 
@@ -11,6 +12,7 @@ const openLayersSelected = params.get('ol') === 'true';
 const mapLibreGLSelected = params.get('ml') === 'true';
 const deckGLSelected = params.get('deck') === 'true';
 const leafletSelected = params.get('lf') === 'true'; 
+const d3Selected = params.get('d3') === 'true';
 
 const points = parseInt(params.get('points'));
 const selectedLibraries = [];
@@ -56,6 +58,16 @@ if (leafletSelected) {
         cleanup: (map) => {
             map.remove();
             window.leafletMap = null;
+        }
+    });
+}
+if (d3Selected) {
+    selectedLibraries.push({
+        name: 'D3',
+        init: initializeD3,
+        cleanup: (map) => {
+            map.innnerHTML = "";
+            window.d3Map = null;
         }
     });
 }

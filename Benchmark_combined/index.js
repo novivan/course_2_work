@@ -3,11 +3,12 @@ document.getElementById('startBenchmark').addEventListener('click', () => {
     const ml = document.getElementById('mapLibreGLCheckbox').checked;
     const deck = document.getElementById('deckGLCheckbox').checked;
     const lf = document.getElementById('leafletCheckbox').checked;
+    const d3 = document.getElementById('d3Checkbox').checked;
 
     const points_before_parseInt = document.getElementById('pointsAmount').value;
     const points = parseInt(points_before_parseInt);
     
-    if (!ol && !ml && !deck && !lf) {
+    if (!ol && !ml && !deck && !lf && !d3) {
       alert('Выберите хотя бы одну библиотеку');
       return;
     }
@@ -16,5 +17,5 @@ document.getElementById('startBenchmark').addEventListener('click', () => {
         return;
     }
 
-    window.location.href = `benchmark.html?ol=${ol}&ml=${ml}&deck=${deck}&lf=${lf}&points=${points}`;
+    window.location.href = `benchmark.html?ol=${ol}&ml=${ml}&deck=${deck}&lf=${lf}&d3=${d3}&points=${points}`;
   });

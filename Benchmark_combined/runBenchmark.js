@@ -1,5 +1,6 @@
 import { fromLonLat } from 'ol/proj';
 import { LinearInterpolator } from '@deck.gl/core';
+import * as d3 from 'd3';
 
 let DUR = 500;
 
@@ -38,6 +39,8 @@ export async function runBenchmarkForLibrary(library) {
     map = window.deckGLMap;
   } else if (library === 'Leaflet' && window.leafletMap) { // добавляем для Leaflet
     map = window.leafletMap;
+  } else if (library === 'D3') {
+    map = window.d3Map;
   } else {
     console.error(`Не удалось найти карту для библиотеки ${library}`);
   }
@@ -313,6 +316,30 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
             progress.value = 10 + 90 * index / actions.length;
             executeNext();
           });
+        }
+      } else if (library == 'D3') {
+        if (action.type === 'zoom') {
+          d3.select(map)
+            .transition()
+            .duration(DUR)
+            .attr("transform", `scale(${action.value})`)
+            .on("end", () => {
+              index++;
+              progress.value = 10 + 90 * index/actions.length;
+              executeNext();
+            });
+        } else if (action.type == 'pan') {
+          const translateX = action.value[0] * 10;
+          const translateY = action.value[1] * 10;
+          d3.select(map)
+            .transition()
+            .duration(DUR)
+            .attr("transform", `translate(${translateX}, ${translateY})`)
+            .on("end", () => {
+              index++;
+              progress.value = 10 + 90 * index / actions.length;
+              executeNext();
+            });
         }
       }
     }
