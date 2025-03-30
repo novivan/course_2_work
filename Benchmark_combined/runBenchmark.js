@@ -41,6 +41,8 @@ export async function runBenchmarkForLibrary(library) {
     map = window.leafletMap;
   } else if (library === 'D3') {
     map = window.d3Map;
+  } else if (library === 'GeoVis' && window.geoVisMap) {
+    map = window.geoVisMap;
   } else {
     console.error(`Не удалось найти карту для библиотеки ${library}`);
   }
@@ -72,7 +74,7 @@ export async function runBenchmarkForLibrary(library) {
     requestAnimationFrame(trackFrame);
   });
   const avgDeltaMs = frames.reduce((sum, delta) => sum + delta, 0) / frames.length;
-  const approximateFps = (1000 / avgDeltaMs).toFixed(1);
+  const approximateFps = (1000 / avgDeltaMs).toFixed(2);
 
   const memoryUsedMB = performance.memory
     ? (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2)
@@ -183,6 +185,7 @@ function performanceActions(map, library) {
       { type: 'zoom', value: 3 },
       { type: 'pan', value: [4.9041, 52.3676] }, // Амстердам 2
       { type: 'zoom', value: 5 },
+      
       /* Почему-то дальше OpenLaters показывает белый прямоугольник вместо карты
 
       { type: 'pan', value: [37.7749, -122.4194] }, // Сан-Франциско 3
@@ -300,21 +303,32 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
           });
         }
       } else if (library == 'Leaflet') {
-        // Добавляем ветку для Leaflet
         if (action.type === 'zoom') {
-          map.setZoom(action.value);
-          // Эмулируем завершение анимации через setTimeout
-          setTimeout(() => {
+          map.once('zoomend', () => {
             index++;
             progress.value = 10 + 90 * index / actions.length;
-            executeNext();
-          }, DUR);
+            setTimeout(executeNext, 10);
+          });
+          map.setZoom(action.value, {animate: true, duration: DUR/1000});
         } else if (action.type === 'pan') {
-          map.panTo(L.latLng(action.value[1], action.value[0]), { animate: true, duration: DUR / 1000 });
+          
+          // Рассчитываем расстояние перемещения
+          const currentCenter = map.getCenter();
+          const targetLatLng = L.latLng(action.value[1], action.value[0]);
+          const distance = currentCenter.distanceTo(targetLatLng);
+          
+          // Отключаем анимацию для больших расстояний
+          const useAnimation = distance < 5000000; // 5000 км
+          
           map.once('moveend', () => {
             index++;
             progress.value = 10 + 90 * index / actions.length;
-            executeNext();
+            setTimeout(executeNext, 10);
+          });
+          
+          map.panTo(targetLatLng, { 
+            animate: useAnimation, 
+            duration: DUR/1000
           });
         }
       } else if (library == 'D3') {
@@ -337,6 +351,22 @@ function sequentiallyExecuteActions(map, actions, callback, library) {
             progress.value = 10 + 90 * index/actions.length;
             executeNext();
           });
+        }
+      } else if (library == 'GeoVis') {
+        if (action.type == 'zoom') {
+          map.setZoom(action.value);
+          setTimeout(() => {
+            index++;
+            progress.value = 10 + 90 * index / actions.length;
+            executeNext();
+          }, DUR);
+        } else if (action.type == 'pan') {
+          map.setCenter(action.value);
+          setTimeout(() => {
+            index++;
+            progress.value = 10 + 90 * index / actions.length;
+            executeNext();
+          }, DUR);
         }
       }
     }

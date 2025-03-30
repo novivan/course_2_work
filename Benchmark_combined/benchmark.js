@@ -14,6 +14,7 @@ const mapLibreGLSelected = params.get('ml') === 'true';
 const deckGLSelected = params.get('deck') === 'true';
 const leafletSelected = params.get('lf') === 'true'; 
 const d3Selected = params.get('d3') === 'true';
+const geoVisSelected = params.get('geovis') === 'true';
 
 const points = parseInt(params.get('points'));
 const selectedLibraries = [];
@@ -72,27 +73,36 @@ if (d3Selected) {
             }
             const container = document.getElementById('map');
             if (container) {
-                // Теперь d3 доступен благодаря импорту
                 d3.select(container).selectAll('svg').remove();
             }
             window.d3Map = null;
         }
     });
 }
+if (geoVisSelected) {
+    selectedLibraries.push({
+        name: 'GeoVis',
+        init: () => import('./mainGeoVis.js').then(module => module.initializeGeoVis('map')),
+        cleanup: (map) => {
+            map.remove();
+            window.geoVisMap = null;
+        }
+    });
+}
+
 
 async function runBenchmark() {
     const results = [];
     for (const lib of selectedLibraries) {
         const map = await lib.init('map');
 
-        // Wait for DeckGL to be initialized
         if (lib.name === 'DeckGL') {
             await new Promise(resolve => {
                 const checkDeckGL = () => {
                     if (window.deckGLMap) {
                         resolve();
                     } else {
-                        setTimeout(checkDeckGL, 100); // Check every 100ms
+                        setTimeout(checkDeckGL, 100);
                     }
                 };
                 checkDeckGL();
@@ -109,7 +119,7 @@ async function runBenchmark() {
         ...result,
         timestamp,
         points,
-        userAgent: navigator.userAgent
+        userAgent: navigator.userAgent // не используется, может понадобиться позже
     }));
 
     try {
@@ -199,9 +209,9 @@ function displayResults(results) {
                 return `
                     <tr>
                         <td>${result.library}</td>
-                        <td>${result.dataLoadTime || 'N/A'}</td>
-                        <td>${result.renderTime || 'N/A'}</td>
-                        <td>${result.fps || 'N/A'}</td>
+                        <td>${result.dataLoadTime}</td>
+                        <td>${result.renderTime}</td>
+                        <td>${result.fps}</td>
                         <td>${result.memoryUsed || 'N/A'}</td>
                         <td>${result.overallPerformance || 'N/A'}</td>
                     </tr>

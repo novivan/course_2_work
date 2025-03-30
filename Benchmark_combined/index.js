@@ -1,27 +1,29 @@
+import { initializeGeoVis } from './mainGeoVis.js';
+
 document.getElementById('startBenchmark').addEventListener('click', () => {
     const ol = document.getElementById('openLayersCheckbox').checked;
     const ml = document.getElementById('mapLibreGLCheckbox').checked;
     const deck = document.getElementById('deckGLCheckbox').checked;
     const lf = document.getElementById('leafletCheckbox').checked;
     const d3 = document.getElementById('d3Checkbox').checked;
+    const geovis = document.getElementById('geovisCheckbox') && document.getElementById('geovisCheckbox').checked;
 
-    const points_before_parseInt = document.getElementById('pointsAmount').value;
-    const points = parseInt(points_before_parseInt);
+    const points_string = document.getElementById('pointsAmount').value;
+    const points = parseInt(points_string);
     
-    if (!ol && !ml && !deck && !lf && !d3) {
+    if (!ol && !ml && !deck && !lf && !d3 && !geovis) {
       alert('Выберите хотя бы одну библиотеку');
       return;
     }
-    if (isNaN(points) || points < 0 || points > 1000000 || points_before_parseInt.includes('.') || points_before_parseInt.includes(',')) {
+    if (isNaN(points) || points < 0 || points > 1000000 || points_string.includes('.') || points_string.includes(',')) {
         alert('Введите корректное количество точек (целое число от 0 до 1000000 включительно)');
         return;
     }
 
-    window.location.href = `benchmark.html?ol=${ol}&ml=${ml}&deck=${deck}&lf=${lf}&d3=${d3}&points=${points}`;
+    window.location.href = `benchmark.html?ol=${ol}&ml=${ml}&deck=${deck}&lf=${lf}&d3=${d3}&geovis=${geovis}&points=${points}`;
   });
 
-
-  document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     fetch('http://localhost:3000/api/results')
       .then(response => response.json())
       .then(data => {
@@ -46,9 +48,11 @@ document.getElementById('startBenchmark').addEventListener('click', () => {
   
         // Строим HTML-таблицу
         const table = document.createElement('table');
-        table.style.width = '100%';
+        table.style.width = '55%';
         table.style.borderCollapse = 'collapse';
         table.style.marginTop = '20px';
+        table.style.marginLeft = 'auto';
+        table.style.marginRight = 'auto';
   
         // Заголовок таблицы
         const headerRow = document.createElement('tr');
