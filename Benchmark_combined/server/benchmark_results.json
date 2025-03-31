@@ -571,6 +571,17 @@
       "timestamp": "2025-02-18T18:24:09.642Z",
       "points": 100000,
       "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+    },
+    {
+      "library": "GeoVis",
+      "dataLoadTime": "676.095",
+      "renderTime": "105547.40",
+      "fps": "60.81",
+      "memoryUsed": "130.04",
+      "overallPerformance": "774.10",
+      "timestamp": "2025-03-31T12:53:50.583Z",
+      "points": 100000,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
     }
   ]
 }
